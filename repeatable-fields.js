@@ -4,110 +4,142 @@
  *
  * Copyright (c) 2014-2015 Rhyzz
  * License MIT
-*/
+ */
 
-(function($) {
-	$.fn.repeatable_fields = function(custom_settings) {
-		var default_settings = {
-			wrapper: '.wrapper',
-			container: '.container',
-			row: '.row',
-			add: '.add',
-			remove: '.remove',
-			move: '.move',
-			template: '.template',
-			is_sortable: true,
-			before_add: null,
-			after_add: after_add,
-			before_remove: null,
-			after_remove: null,
-			sortable_options: null,
-		}
+(function ($) {
+    $.fn.repeatable_fields = function (custom_settings) {
+        var default_settings = {
+            wrapper: '.wrapper',
+            container: '.container',
+            row: '.row',
+            add: '.add',
+            remove: '.remove',
+            move: '.move',
+            template: '.template',
+            is_sortable: true,
+            remove_action: "remove",
+            before_add: null,
+            after_add: null,
+            before_remove: null,
+            after_remove: null,
+            sortable_options: null
+        };
 
-		var settings = $.extend(default_settings, custom_settings);
+        var settings = $.extend(default_settings, custom_settings);
 
-		// Initialize all repeatable field wrappers
-		initialize(this);
+        // Initialize all repeatable field wrappers
+        initialize(this);
 
-		function initialize(parent) {
-			$(settings.wrapper, parent).each(function(index, element) {
-				var wrapper = this;
+        function add_row(event, container) {
+            event.stopImmediatePropagation();
 
-				var container = $(wrapper).children(settings.container);
+            var row_template = $($(container).children(settings.template).clone().removeClass(settings.template.replace('.', ''))[0].outerHTML);
 
-				// Disable all form elements inside the row template
-				$(container).children(settings.template).hide().find(':input').each(function() {
-					$(this).prop('disabled', true);
-				});
+            // Enable all form elements inside the row template
+            $(row_template).find(':input').each(function () {
+                $(this).prop('disabled', false);
+            });
 
-				var row_count = $(container).children(settings.row).filter(function() {
-					return !$(this).hasClass(settings.template.replace('.', ''));
-				}).length;
+            if (typeof settings.before_add === 'function') {
+                settings.before_add(container);
+            }
 
-				$(container).attr('data-rf-row-count', row_count);
+            var new_row = $(row_template).show().appendTo(container);
 
-				$(wrapper).on('click', settings.add, function(event) {
-					event.stopImmediatePropagation();
+            after_add(container, new_row);
 
-					var row_template = $($(container).children(settings.template).clone().removeClass(settings.template.replace('.', ''))[0].outerHTML);
+            if (typeof settings.after_add === 'function') {
+                settings.after_add(container, new_row);
+            }
 
-					// Enable all form elements inside the row template
-					$(row_template).find(':input').each(function() {
-						$(this).prop('disabled', false);
-					});
+            // The new row might have it's own repeatable field wrappers so initialize them too
+            initialize(new_row);
+        }
 
-					if(typeof settings.before_add === 'function') {
-						settings.before_add(container);
-					}
+        function remove_row(event, container) {
+            event.stopImmediatePropagation();
 
-					var new_row = $(row_template).show().appendTo(container);
+            var row = $(event.target).parents(settings.row).first();
 
-					if(typeof settings.after_add === 'function') {
-						settings.after_add(container, new_row);
-					}
+            if (typeof settings.before_remove === 'function') {
+                settings.before_remove(container, row);
+            }
 
-					// The new row might have it's own repeatable field wrappers so initialize them too
-					initialize(new_row);
-				});
+            switch (settings.remove_action) {
+                case "hide":
+                    row.hide();
+                    break;
+                case "disable":
+                    row.disable();
+                    break;
+                case "remove":
+                default:
+                    row.remove();
+                    break;
+            }
 
-				$(wrapper).on('click', settings.remove, function(event) {
-					event.stopImmediatePropagation();
+            if (typeof settings.after_remove === 'function') {
+                settings.after_remove(container);
+            }
+        }
 
-					var row = $(this).parents(settings.row).first();
+        function initialize(parent) {
+            $(settings.wrapper, parent).each(function (index, element) {
+                var wrapper = this;
 
-					if(typeof settings.before_remove === 'function') {
-						settings.before_remove(container, row);
-					}
+                var container = $(wrapper).children(settings.container);
 
-					row.remove();
+                // Disable all form elements inside the row template
+                $(container).children(settings.template).hide().find(':input').each(function () {
+                    $(this).prop('disabled', true);
+                });
 
-					if(typeof settings.after_remove === 'function') {
-						settings.after_remove(container);
-					}
-				});
+                var row_count = $(container).children(settings.row).filter(function () {
+                    return !$(this).hasClass(settings.template.replace('.', ''));
+                }).length;
 
-				if(settings.is_sortable === true && typeof $.ui !== 'undefined' && typeof $.ui.sortable !== 'undefined') {
-					var sortable_options = settings.sortable_options !== null ? settings.sortable_options : {};
+                $(container).attr('data-rf-row-count', row_count);
 
-					sortable_options.handle = settings.move;
+                $(wrapper).on('click', settings.add, function (event) {
+                    add_row(event, container);
+                    return false;
+                });
+                $(settings.add).on('click', function (event) {
+                    add_row(event, container);
+                    return false;
+                });
 
-					$(wrapper).find(settings.container).sortable(sortable_options);
-				}
-			});
-		}
+                $(wrapper).on('click', settings.remove, function (event) {
+                    remove_row(event, container);
+                    return false;
+                });
+                $(settings.remove).on('click', function (event) {
+                    remove_row(event, container);
+                    return false;
+                });
 
-		function after_add(container, new_row) {
-			var row_count = $(container).attr('data-rf-row-count');
+                if (settings.is_sortable === true && typeof $.ui !== 'undefined' && typeof $.ui.sortable !== 'undefined') {
+                    var sortable_options = settings.sortable_options !== null ? settings.sortable_options : {};
 
-			row_count++;
+                    sortable_options.handle = settings.move;
 
-			$('*', new_row).each(function() {
-				$.each(this.attributes, function(index, element) {
-					this.value = this.value.replace(/{{row-count-placeholder}}/, row_count - 1);
-				});
-			});
+                    $(wrapper).find(settings.container).sortable(sortable_options);
+                }
+            });
+        }
 
-			$(container).attr('data-rf-row-count', row_count);
-		}
-	}
+        function after_add(container, new_row) {
+            var row_count = $(container).attr('data-rf-row-count');
+
+            row_count++;
+
+            $('*', new_row).each(function () {
+                $.each(this.attributes, function (index, element) {
+                    this.value = this.value.replace(/{{row-count-placeholder}}/, row_count - 1);
+                });
+            });
+
+            $(container).attr('data-rf-row-count', row_count);
+        }
+    }
 })(jQuery);
