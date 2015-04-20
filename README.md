@@ -2,6 +2,7 @@
 
 ## Upstream
 [Upstream Plugin's Homepage with Demo](http://www.rhyzz.com/repeatable-fields.html)
+
 [Rhyzz Github](https://github.com/Rhyzz/repeatable-fields)
 
 ## Fork demo
@@ -57,11 +58,9 @@ This plugin requires [jQuery](http://jquery.com/) and [jQuery UI Sortable](https
 
 #### JavaScript
 
-    jQuery(function() {
-        jQuery('.repeat').each(function() {
-            jQuery(this).repeatable_fields();
-        });
-    });
+    $(document).ready(function() {
+        $("#id_selector").repeatable_fields();
+    }
 
 ## Options
 
@@ -99,7 +98,8 @@ sortable_options: null
 <dd>Specifies an element within the container that acts as a row holder. The row is what is repeated.</dd>
 
 <dt>add</dt>
-<dd>Specifies an element within the wrapper which let's you add more more</dd>
+<dd>Specifies an element within the wrapper which let's you add more more.
+Note: If there are multiple repeatable-fields enabled forms on the page, it will be necessary to set this as unique for each instantiation.</dd>
 
 <dt>remove</dt>
 <dd>Specifies an element within the row which let's you remove the current row</dd>
