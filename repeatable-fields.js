@@ -26,6 +26,7 @@
             is_sortable: true,
             remove_action: "remove",
             remove_disable_class: "disabled",
+            removed_field_property: "disabled",
             undo_enable: false,
             undo: ".undo",
             before_add: null,
@@ -83,7 +84,15 @@
                     break;
                 case "disable":
                     row.addClass(settings.remove_disable_class);
-                    row.find(":input").prop("disabled", true);
+                    switch (settings.removed_field_property) {
+                        case "readonly":
+                            row.find(":input").prop("readonly", true);
+                            break;
+                        case "disabled":
+                        default:
+                            row.find(":input").prop("disabled", true);
+                            break;
+                    }
                     row.find("input[type='hidden']").prop("disabled", false);
                     if (settings.undo_enable) {
                         row.find(settings.remove).hide();
@@ -119,6 +128,7 @@
 
             row.removeClass(settings.remove_disable_class);
             row.find(":input").prop("disabled", false);
+            row.find(":input").prop("readonly", false);
             row.find(settings.undo).hide();
             row.find(settings.remove).show();
             row.find(settings.move).show();
