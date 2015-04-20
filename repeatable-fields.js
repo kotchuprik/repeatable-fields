@@ -194,6 +194,10 @@
         }
 
         function after_add(container, new_row) {
+            new_row.find(settings.undo).hide();
+            new_row.find(settings.remove).show();
+            new_row.find(settings.move).show();
+
             var row_count = $(container).attr('data-rf-row-count');
 
             row_count++;
