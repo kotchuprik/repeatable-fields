@@ -53,11 +53,13 @@
                 $(this).prop('disabled', false);
             });
 
+            var new_row = $(row_template);
+
             if (typeof settings.before_add === 'function') {
-                settings.before_add(container);
+                settings.before_add(container, new_row);
             }
 
-            var new_row = $(row_template).show().appendTo(container);
+            new_row.show().appendTo(container);
 
             after_add(container, new_row);
 
