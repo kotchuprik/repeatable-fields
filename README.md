@@ -32,7 +32,7 @@ The functionality that is provided by this plugin can also be referred to as:
 
 This plugin requires [jQuery](http://jquery.com/) and [jQuery UI Sortable](https://jqueryui.com/sortable/).
 
-### Example
+### Example (deprecated!)
 
 #### HTML
 
@@ -157,3 +157,5 @@ Disabling a row allows the "delete" to be undone.</dd>
 <dd>Specifies an object that can contain Options, Methods and Events which are passed to jQuery UI Sortable</dd>
 </dl>
 
+## TODO 
+- example update
