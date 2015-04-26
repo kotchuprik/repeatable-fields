@@ -5,8 +5,14 @@
 
 [Rhyzz Github](https://github.com/Rhyzz/repeatable-fields)
 
-## Fork demo
+## Upstream fork demo
 [Demo](https://lapwingorg.github.io/repeatable-fields)
+
+## Fork differences
+
+Another workflow:
+
+![Alt text](https://monosnap.com/file/nDBkqMfxviJJVoY00Hhqf2BOXx7sNN.png)
 
 ## Description
 
