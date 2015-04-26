@@ -19,7 +19,8 @@
             wrapper: '.wrapper',
             container: '.container',
             row: '.row',
-            add: '.add',
+            before: '',
+            after: '',
             remove: '.remove',
             move: '.move',
             template: '.template',
@@ -35,7 +36,8 @@
             after_remove: null,
             before_undo: null,
             after_undo: null,
-            sortable_options: null
+            sortable_options: null,
+            count_attribute: 'rfRowCount'
         };
 
         var settings = $.extend(default_settings, custom_settings);
@@ -43,7 +45,7 @@
         // Initialize all repeatable field wrappers
         initialize(this);
 
-        function add_row(event, container) {
+        function add_row(event, container, action) {
             event.stopImmediatePropagation();
 
             var row_template = $($(container).children(settings.template).clone().removeClass(settings.template.replace('.', ''))[0].outerHTML);
@@ -59,7 +61,13 @@
                 settings.before_add(container, new_row);
             }
 
-            new_row.show().appendTo(container);
+            new_row.show();
+            var current_row = $(event.target).parents('.row');
+            if (action == 'before') {
+                current_row.before(new_row);
+            } else {
+                current_row.after(new_row);
+            }
 
             after_add(container, new_row);
 
@@ -154,11 +162,11 @@
                 // Hide the undo
                 $(container).children().find(settings.undo).hide();
                 if (settings.undo_enable) {
-                    $(container).children().find(settings.remove).each(function(index, child) {
+                    $(container).children().find(settings.remove).each(function (index, child) {
                         var elem = $(child);
                         if (elem.prop("disabled") !== null && elem.prop("disabled") !== undefined &&
-                                (elem.prop("disabled") === "" || elem.prop("disabled") === "disabled" ||
-                                 elem.prop("disabled") === true)) {
+                            (elem.prop("disabled") === "" || elem.prop("disabled") === "disabled" ||
+                            elem.prop("disabled") === true)) {
                             var row = elem.parents(settings.row);
                             row.find(settings.remove).hide();
                             row.find(settings.move).hide();
@@ -171,15 +179,25 @@
                     return !$(this).hasClass(settings.template.replace('.', ''));
                 }).length;
 
-                $(container).attr('data-rf-row-count', row_count);
+                $(container).data(settings.count_attribute, row_count);
 
                 // Allow the Add button to be in the container or elsewhere
-                $(wrapper).on('click', settings.add, function (event) {
-                    add_row(event, container);
+                $(wrapper).on('click', settings.before, function (event) {
+                    add_row(event, container, 'before');
                     return false;
                 });
-                $(settings.add).on('click', function (event) {
-                    add_row(event, container);
+                $(settings.before).on('click', function (event) {
+                    console.log(settings.before);
+                    add_row(event, container, 'before');
+                    return false;
+                });
+
+                $(wrapper).on('click', settings.after, function (event) {
+                    add_row(event, container, 'after');
+                    return false;
+                });
+                $(settings.after).on('click', function (event) {
+                    add_row(event, container, 'after');
                     return false;
                 });
 
@@ -210,17 +228,16 @@
             new_row.find(settings.remove).show();
             new_row.find(settings.move).show();
 
-            var row_count = $(container).attr('data-rf-row-count');
-
+            var row_count = $(container).data(settings.count_attribute);
             row_count++;
 
             $('*', new_row).each(function () {
                 $.each(this.attributes, function (index, element) {
-                    this.value = this.value.replace(/{{row-count-placeholder}}/, row_count - 1);
+                    this.value = this.value.replace(/{row-count-placeholder}/, row_count - 1);
                 });
             });
 
-            $(container).attr('data-rf-row-count', row_count);
+            $(container).data(settings.count_attribute, row_count);
         }
     }
 })(jQuery);
